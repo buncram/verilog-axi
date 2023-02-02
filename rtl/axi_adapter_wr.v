@@ -548,8 +548,8 @@ always @* begin
                     data_next = s_axi_wdata;
                     strb_next = s_axi_wstrb;
                     wuser_next = s_axi_wuser;
-                    m_axi_wdata_int = s_axi_wdata >> (addr_reg[S_ADDR_BIT_OFFSET-1:M_ADDR_BIT_OFFSET] * M_DATA_WIDTH);
-                    m_axi_wstrb_int = s_axi_wstrb >> (addr_reg[S_ADDR_BIT_OFFSET-1:M_ADDR_BIT_OFFSET] * M_STRB_WIDTH);
+                    m_axi_wdata_int = s_axi_wdata >> (addr_reg[S_ADDR_BIT_OFFSET:M_ADDR_BIT_OFFSET-1] * M_DATA_WIDTH);
+                    m_axi_wstrb_int = s_axi_wstrb >> (addr_reg[S_ADDR_BIT_OFFSET:M_ADDR_BIT_OFFSET-1] * M_STRB_WIDTH);
                     m_axi_wlast_int = 1'b0;
                     m_axi_wuser_int = s_axi_wuser;
                     m_axi_wvalid_int = 1'b1;
@@ -576,8 +576,8 @@ always @* begin
                 s_axi_wready_next = 1'b0;
 
                 if (m_axi_wready_int_reg) begin
-                    m_axi_wdata_int = data_reg >> (addr_reg[S_ADDR_BIT_OFFSET-1:M_ADDR_BIT_OFFSET] * M_DATA_WIDTH);
-                    m_axi_wstrb_int = strb_reg >> (addr_reg[S_ADDR_BIT_OFFSET-1:M_ADDR_BIT_OFFSET] * M_STRB_WIDTH);
+                    m_axi_wdata_int = data_reg >> (addr_reg[S_ADDR_BIT_OFFSET:M_ADDR_BIT_OFFSET-1] * M_DATA_WIDTH);
+                    m_axi_wstrb_int = strb_reg >> (addr_reg[S_ADDR_BIT_OFFSET:M_ADDR_BIT_OFFSET-1] * M_STRB_WIDTH);
                     m_axi_wlast_int = 1'b0;
                     m_axi_wuser_int = wuser_reg;
                     m_axi_wvalid_int = 1'b1;
