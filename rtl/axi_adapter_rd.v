@@ -499,7 +499,11 @@ always @* begin
                 m_axi_rready_next = s_axi_rready_int_early && !m_axi_arvalid;
 
                 if (m_axi_rready && m_axi_rvalid) begin
-                    data_next[addr_reg[S_ADDR_BIT_OFFSET-1:M_ADDR_BIT_OFFSET]*SEGMENT_DATA_WIDTH +: SEGMENT_DATA_WIDTH] = m_axi_rdata;
+                    data_next[addr_reg[
+                        (S_ADDR_BIT_OFFSET-1 < M_ADDR_BIT_OFFSET ? M_ADDR_BIT_OFFSET : S_ADDR_BIT_OFFSET-1)
+                        :
+                        (S_ADDR_BIT_OFFSET-1 < M_ADDR_BIT_OFFSET ? M_ADDR_BIT_OFFSET : M_ADDR_BIT_OFFSET)
+                    ]*SEGMENT_DATA_WIDTH +: SEGMENT_DATA_WIDTH] = m_axi_rdata;
                     if (m_axi_rresp) begin
                         resp_next = m_axi_rresp;
                     end
