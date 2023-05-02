@@ -322,8 +322,8 @@ generate
         reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg = 0;
 
         (* ram_style = "distributed", ramstyle = "no_rw_check, mlab" *)
-        reg [CL_S_COUNT-1:0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
-        wire [CL_S_COUNT-1:0] fifo_wr_select;
+        reg [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_wr_select;
         wire fifo_wr_en;
         wire fifo_rd_en;
         reg fifo_half_full_reg = 1'b0;
@@ -360,7 +360,7 @@ generate
         wire [S_COUNT-1:0] a_acknowledge;
         wire [S_COUNT-1:0] a_grant;
         wire a_grant_valid;
-        wire [CL_S_COUNT-1:0] a_grant_encoded;
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] a_grant_encoded;
 
         arbiter #(
             .PORTS(S_COUNT),
@@ -396,7 +396,7 @@ generate
         assign fifo_wr_en = s_axil_arvalid_mux && s_axil_arready_mux && a_grant_valid;
 
         // read response forwarding
-        wire [CL_S_COUNT-1:0] r_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] r_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
 
         assign int_axil_rvalid[n*S_COUNT +: S_COUNT] = int_m_axil_rvalid[n] << r_select;
         assign int_m_axil_rready[n] = int_axil_rready[r_select*M_COUNT+n];

@@ -386,8 +386,8 @@ generate
         reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg = 0;
 
         (* ram_style = "distributed", ramstyle = "no_rw_check, mlab" *)
-        reg [CL_S_COUNT-1:0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
-        wire [CL_S_COUNT-1:0] fifo_wr_select;
+        reg [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_wr_select;
         wire fifo_wr_en;
         wire fifo_rd_en;
         reg fifo_half_full_reg = 1'b0;
@@ -420,7 +420,7 @@ generate
         end
 
         // address arbitration
-        reg [CL_S_COUNT-1:0] w_select_reg = 0, w_select_next = 0;
+        reg [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] w_select_reg = 0, w_select_next = 0;
         reg w_select_valid_reg = 1'b0, w_select_valid_next;
         reg w_select_new_reg = 1'b0, w_select_new_next;
 
@@ -428,7 +428,7 @@ generate
         wire [S_COUNT-1:0] a_acknowledge;
         wire [S_COUNT-1:0] a_grant;
         wire a_grant_valid;
-        wire [CL_S_COUNT-1:0] a_grant_encoded;
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] a_grant_encoded;
 
         arbiter #(
             .PORTS(S_COUNT),
@@ -497,7 +497,7 @@ generate
         end
 
         // write response forwarding
-        wire [CL_S_COUNT-1:0] b_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
+        wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] b_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
 
         assign int_axil_bvalid[n*S_COUNT +: S_COUNT] = int_m_axil_bvalid[n] << b_select;
         assign int_m_axil_bready[n] = int_axil_bready[b_select*M_COUNT+n];
