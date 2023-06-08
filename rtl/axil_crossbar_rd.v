@@ -261,7 +261,7 @@ generate
         );
 
         assign int_axil_arvalid[m*M_COUNT +: M_COUNT] = m_axil_avalid << a_select;
-        assign m_axil_aready = int_axil_arready[a_select*S_COUNT+m];
+        assign m_axil_aready = int_axil_arready[{32'b0, a_select}*S_COUNT+m];
 
         // response handling
         assign fifo_wr_select = m_rc_select;
@@ -275,12 +275,13 @@ generate
         wire r_valid = fifo_rd_valid_reg;
 
         // read response mux
-        wire [DATA_WIDTH-1:0]  m_axil_rdata_mux  = r_decerr ? {DATA_WIDTH{1'b0}} : int_m_axil_rdata[r_select*DATA_WIDTH +: DATA_WIDTH];
-        wire [1:0]             m_axil_rresp_mux  = r_decerr ? 2'b11 : int_m_axil_rresp[r_select*2 +: 2];
-        wire                   m_axil_rvalid_mux = (r_decerr ? 1'b1 : int_axil_rvalid[r_select*S_COUNT+m]) && r_valid;
+        wire [DATA_WIDTH-1:0]  m_axil_rdata_mux;
+        assign m_axil_rdata_mux = r_decerr ? {DATA_WIDTH{1'b0}} : int_m_axil_rdata[{32'b0, r_select}*DATA_WIDTH +: DATA_WIDTH];
+        wire [1:0]             m_axil_rresp_mux  = r_decerr ? 2'b11 : int_m_axil_rresp[{32'b0, r_select}*2 +: 2];
+        wire                   m_axil_rvalid_mux = (r_decerr ? 1'b1 : int_axil_rvalid[{32'b0, r_select}*S_COUNT+m]) && r_valid;
         wire                   m_axil_rready_mux;
 
-        assign int_axil_rready[m*M_COUNT +: M_COUNT] = (r_valid && m_axil_rready_mux) << r_select;
+        assign int_axil_rready[m*M_COUNT +: M_COUNT] = (r_valid && m_axil_rready_mux) << {32'b0, r_select};
 
         assign fifo_rd_en = m_axil_rvalid_mux && m_axil_rready_mux && r_valid;
 
@@ -398,8 +399,8 @@ generate
         // read response forwarding
         wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] r_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
 
-        assign int_axil_rvalid[n*S_COUNT +: S_COUNT] = int_m_axil_rvalid[n] << r_select;
-        assign int_m_axil_rready[n] = int_axil_rready[r_select*M_COUNT+n];
+        assign int_axil_rvalid[n*S_COUNT +: S_COUNT] = int_m_axil_rvalid[n] << {32'b0, r_select};
+        assign int_m_axil_rready[n] = int_axil_rready[{32'b0, r_select}*M_COUNT+n];
 
         assign fifo_rd_en = int_m_axil_rvalid[n] && int_m_axil_rready[n];
 

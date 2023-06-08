@@ -285,7 +285,7 @@ generate
         );
 
         assign int_axil_awvalid[m*M_COUNT +: M_COUNT] = m_axil_avalid << a_select;
-        assign m_axil_aready = int_axil_awready[a_select*S_COUNT+m];
+        assign m_axil_aready = int_axil_awready[{32'b0, a_select}*S_COUNT+m];
 
         // write command handling
         reg [CL_M_COUNT-1:0] w_select_reg = 0, w_select_next;
@@ -319,7 +319,7 @@ generate
 
         // write data forwarding
         assign int_axil_wvalid[m*M_COUNT +: M_COUNT] = (int_s_axil_wvalid[m] && w_select_valid_reg && !w_drop_reg) << w_select_reg;
-        assign int_s_axil_wready[m] = int_axil_wready[w_select_reg*S_COUNT+m] || w_drop_reg;
+        assign int_s_axil_wready[m] = int_axil_wready[{32'b0, w_select_reg}*S_COUNT+m] || w_drop_reg;
 
         // response handling
         assign fifo_wr_select = m_rc_select;
@@ -333,11 +333,11 @@ generate
         wire b_valid = fifo_rd_valid_reg;
 
         // write response mux
-        wire [1:0]  m_axil_bresp_mux  = b_decerr ? 2'b11 : int_m_axil_bresp[b_select*2 +: 2];
-        wire        m_axil_bvalid_mux = (b_decerr ? 1'b1 : int_axil_bvalid[b_select*S_COUNT+m]) && b_valid;
+        wire [1:0]  m_axil_bresp_mux  = b_decerr ? 2'b11 : int_m_axil_bresp[{32'b0, b_select}*2 +: 2];
+        wire        m_axil_bvalid_mux = (b_decerr ? 1'b1 : int_axil_bvalid[{32'b0, b_select}*S_COUNT+m]) && b_valid;
         wire        m_axil_bready_mux;
 
-        assign int_axil_bready[m*M_COUNT +: M_COUNT] = (b_valid && m_axil_bready_mux) << b_select;
+        assign int_axil_bready[m*M_COUNT +: M_COUNT] = (b_valid && m_axil_bready_mux) << {32'b0, b_select};
 
         assign fifo_rd_en = m_axil_bvalid_mux && m_axil_bready_mux && b_valid;
 
@@ -464,12 +464,12 @@ generate
         assign fifo_wr_en = s_axil_awvalid_mux && s_axil_awready_mux && a_grant_valid;
 
         // write data mux
-        wire [DATA_WIDTH-1:0]  s_axil_wdata_mux   = int_s_axil_wdata[w_select_reg*DATA_WIDTH +: DATA_WIDTH];
-        wire [STRB_WIDTH-1:0]  s_axil_wstrb_mux   = int_s_axil_wstrb[w_select_reg*STRB_WIDTH +: STRB_WIDTH];
-        wire                   s_axil_wvalid_mux  = int_axil_wvalid[w_select_reg*M_COUNT+n] && w_select_valid_reg;
+        wire [DATA_WIDTH-1:0]  s_axil_wdata_mux   = int_s_axil_wdata[{32'b0, w_select_reg}*DATA_WIDTH +: DATA_WIDTH];
+        wire [STRB_WIDTH-1:0]  s_axil_wstrb_mux   = int_s_axil_wstrb[{32'b0, w_select_reg}*STRB_WIDTH +: STRB_WIDTH];
+        wire                   s_axil_wvalid_mux  = int_axil_wvalid[{32'b0, w_select_reg}*M_COUNT+n] && w_select_valid_reg;
         wire                   s_axil_wready_mux;
 
-        assign int_axil_wready[n*S_COUNT +: S_COUNT] = (w_select_valid_reg && s_axil_wready_mux) << w_select_reg;
+        assign int_axil_wready[n*S_COUNT +: S_COUNT] = (w_select_valid_reg && s_axil_wready_mux) << {32'b0, w_select_reg};
 
         // write data routing
         always @* begin
@@ -500,7 +500,7 @@ generate
         wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] b_select = S_COUNT > 1 ? fifo_select[fifo_rd_ptr_reg[FIFO_ADDR_WIDTH-1:0]] : 0;
 
         assign int_axil_bvalid[n*S_COUNT +: S_COUNT] = int_m_axil_bvalid[n] << b_select;
-        assign int_m_axil_bready[n] = int_axil_bready[b_select*M_COUNT+n];
+        assign int_m_axil_bready[n] = int_axil_bready[{32'b0, b_select}*M_COUNT+n];
 
         assign fifo_rd_en = int_m_axil_bvalid[n] && int_m_axil_bready[n];
 
