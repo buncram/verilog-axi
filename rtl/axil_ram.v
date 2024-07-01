@@ -83,6 +83,9 @@ reg s_axil_rvalid_reg = 1'b0, s_axil_rvalid_next;
 reg [DATA_WIDTH-1:0] s_axil_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
 reg s_axil_rvalid_pipe_reg = 1'b0;
 
+reg awvalid_seen = 1'b0;
+reg wvalid_seen = 1'b0;
+
 // (* RAM_STYLE="BLOCK" *)
 reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
 
@@ -117,7 +120,8 @@ always @* begin
     s_axil_wready_next = 1'b0;
     s_axil_bvalid_next = s_axil_bvalid_reg && !s_axil_bready;
 
-    if (s_axil_awvalid && s_axil_wvalid && (!s_axil_bvalid || s_axil_bready) && (!s_axil_awready && !s_axil_wready)) begin
+    if ((s_axil_awvalid || awvalid_seen) && (s_axil_wvalid || wvalid_seen)
+        && (!s_axil_bvalid || s_axil_bready) && (!s_axil_awready && !s_axil_wready)) begin
         s_axil_awready_next = 1'b1;
         s_axil_wready_next = 1'b1;
         s_axil_bvalid_next = 1'b1;
@@ -127,6 +131,25 @@ always @* begin
 end
 
 always @(posedge clk) begin
+    if (s_axil_awready_next | s_axil_awready) begin
+        awvalid_seen <= 1'b0;
+    end else begin
+        if (s_axil_awvalid) begin
+            awvalid_seen <= 1'b1;
+        end else begin
+            awvalid_seen <= awvalid_seen;
+        end
+    end
+    if (s_axil_wready_next | s_axil_wready) begin
+        wvalid_seen <= 1'b0;
+    end else begin
+        if (s_axil_wvalid) begin
+            wvalid_seen <= 1'b1;
+        end else begin
+            wvalid_seen <= wvalid_seen;
+        end
+    end
+
     s_axil_awready_reg <= s_axil_awready_next;
     s_axil_wready_reg <= s_axil_wready_next;
     s_axil_bvalid_reg <= s_axil_bvalid_next;
