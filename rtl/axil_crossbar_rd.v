@@ -147,8 +147,8 @@ generate
         // response routing FIFO
         localparam FIFO_ADDR_WIDTH = $clog2(S_ACCEPT[m*32 +: 32])+1;
 
-        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_wr_ptr_reg = 0;
-        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg = 0;
+        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_wr_ptr_reg;
+        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg;
 
         (* ram_style = "distributed", ramstyle = "no_rw_check, mlab" *)
         reg [CL_M_COUNT-1:0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
@@ -159,11 +159,11 @@ generate
         wire fifo_wr_decerr;
         wire fifo_wr_en;
 
-        reg [CL_M_COUNT-1:0] fifo_rd_select_reg = 0;
-        reg fifo_rd_decerr_reg = 0;
-        reg fifo_rd_valid_reg = 0;
+        reg [CL_M_COUNT-1:0] fifo_rd_select_reg;
+        reg fifo_rd_decerr_reg;
+        reg fifo_rd_valid_reg;
         wire fifo_rd_en;
-        reg fifo_half_full_reg = 1'b0;
+        reg fifo_half_full_reg;
 
         wire fifo_empty = fifo_rd_ptr_reg == fifo_wr_ptr_reg;
 
@@ -178,6 +178,9 @@ generate
                     fifo_select[i] <= 0;
                     fifo_decerr[i] <= 0;
                 end
+                fifo_rd_select_reg <= 0;
+                fifo_rd_decerr_reg <= 0;
+                fifo_half_full_reg <= 0;
             end else begin
                 if (fifo_wr_en) begin
                     fifo_select[fifo_wr_ptr_reg[FIFO_ADDR_WIDTH-1:0]] <= fifo_wr_select;
@@ -316,15 +319,15 @@ generate
         // response routing FIFO
         localparam FIFO_ADDR_WIDTH = $clog2(M_ISSUE[n*32 +: 32])+1;
 
-        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_wr_ptr_reg = 0;
-        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg = 0;
+        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_wr_ptr_reg;
+        reg [FIFO_ADDR_WIDTH+1-1:0] fifo_rd_ptr_reg;
 
         (* ram_style = "distributed", ramstyle = "no_rw_check, mlab" *)
         reg [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_select[(2**FIFO_ADDR_WIDTH)-1:0];
         wire [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] fifo_wr_select;
         wire fifo_wr_en;
         wire fifo_rd_en;
-        reg fifo_half_full_reg = 1'b0;
+        reg fifo_half_full_reg;
 
         wire fifo_empty = fifo_rd_ptr_reg == fifo_wr_ptr_reg;
 
@@ -337,6 +340,7 @@ generate
                 for (i = 0; i < 2**FIFO_ADDR_WIDTH; i = i + 1) begin
                     fifo_select[i] <= 0;
                 end
+                fifo_half_full_reg <= 0;
             end else begin
                 if (fifo_wr_en) begin
                     fifo_select[fifo_wr_ptr_reg[FIFO_ADDR_WIDTH-1:0]] <= fifo_wr_select;

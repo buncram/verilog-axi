@@ -307,9 +307,9 @@ generate
         assign m_axi_aready = int_axi_awready[a_select*S_COUNT+m];
 
         // write command handling
-        reg [CL_M_COUNT-1:0] w_select_reg = 0, w_select_next;
-        reg w_drop_reg = 1'b0, w_drop_next;
-        reg w_select_valid_reg = 1'b0, w_select_valid_next;
+        reg [CL_M_COUNT-1:0] w_select_reg, w_select_next;
+        reg w_drop_reg, w_drop_next;
+        reg w_select_valid_reg, w_select_valid_next;
 
         assign m_wc_ready = !w_select_valid_reg;
 
@@ -325,15 +325,16 @@ generate
             end
         end
 
-        always @(posedge clk) begin
+        always @(posedge clk or posedge rst) begin
             if (rst) begin
                 w_select_valid_reg <= 1'b0;
+                w_select_reg <= 0;
+                w_drop_reg <= 0;
             end else begin
                 w_select_valid_reg <= w_select_valid_next;
+                w_select_reg <= w_select_next;
+                w_drop_reg <= w_drop_next;
             end
-
-            w_select_reg <= w_select_next;
-            w_drop_reg <= w_drop_next;
         end
 
         // write data forwarding
@@ -341,8 +342,8 @@ generate
         assign int_s_axi_wready[m] = int_axi_wready[w_select_reg*S_COUNT+m] || w_drop_reg;
 
         // decode error handling
-        reg [S_ID_WIDTH-1:0]  decerr_m_axi_bid_reg = {S_ID_WIDTH{1'b0}}, decerr_m_axi_bid_next;
-        reg                   decerr_m_axi_bvalid_reg = 1'b0, decerr_m_axi_bvalid_next;
+        reg [S_ID_WIDTH-1:0]  decerr_m_axi_bid_reg, decerr_m_axi_bid_next;
+        reg                   decerr_m_axi_bvalid_reg, decerr_m_axi_bvalid_next;
         wire                  decerr_m_axi_bready;
 
         assign m_rc_ready = !decerr_m_axi_bvalid_reg;
@@ -361,14 +362,14 @@ generate
             end
         end
 
-        always @(posedge clk) begin
+        always @(posedge clk or posedge rst) begin
             if (rst) begin
                 decerr_m_axi_bvalid_reg <= 1'b0;
+                decerr_m_axi_bid_reg <= 0;
             end else begin
                 decerr_m_axi_bvalid_reg <= decerr_m_axi_bvalid_next;
+                decerr_m_axi_bid_reg <= decerr_m_axi_bid_next;
             end
-
-            decerr_m_axi_bid_reg <= decerr_m_axi_bid_next;
         end
 
         // write response arbitration
@@ -490,11 +491,11 @@ generate
         // in-flight transaction count
         wire trans_start;
         wire trans_complete;
-        reg [$clog2(M_ISSUE[n*32 +: 32]+1)-1:0] trans_count_reg = 0;
+        reg [$clog2(M_ISSUE[n*32 +: 32]+1)-1:0] trans_count_reg;
 
         wire trans_limit = trans_count_reg >= M_ISSUE[n*32 +: 32] && !trans_complete;
 
-        always @(posedge clk) begin
+        always @(posedge clk or posedge rst) begin
             if (rst) begin
                 trans_count_reg <= 0;
             end else begin
@@ -508,9 +509,9 @@ generate
 
         // address arbitration
         // reg [(((CL_S_COUNT-1) > 0) ? CL_S_COUNT-1 : 0):0] w_select_reg = 0, w_select_next;
-        reg [S_COUNT*2-1:0] w_select_reg = 0, w_select_next;
-        reg w_select_valid_reg = 1'b0, w_select_valid_next;
-        reg w_select_new_reg = 1'b0, w_select_new_next;
+        reg [S_COUNT*2-1:0] w_select_reg, w_select_next;
+        reg w_select_valid_reg, w_select_valid_next;
+        reg w_select_new_reg, w_select_new_next;
 
         wire [S_COUNT-1:0] a_request;
         wire [S_COUNT-1:0] a_acknowledge;
@@ -585,16 +586,16 @@ generate
             end
         end
 
-        always @(posedge clk) begin
+        always @(posedge clk or posedge rst) begin
             if (rst) begin
                 w_select_valid_reg <= 1'b0;
                 w_select_new_reg <= 1'b1;
+                w_select_reg <= 0;
             end else begin
                 w_select_valid_reg <= w_select_valid_next;
                 w_select_new_reg <= w_select_new_next;
+                w_select_reg <= w_select_next;
             end
-
-            w_select_reg <= w_select_next;
         end
 
         // write response forwarding
