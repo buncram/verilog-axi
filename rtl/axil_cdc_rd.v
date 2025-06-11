@@ -109,8 +109,8 @@ wire                  s_flag_sync_reg_target;
 // these should be statically configured before any activity happens
 // on the AXI bus; but pulled into the target clock domain to make
 // timing cleaner
-reg [1:0]             m_clkmode[2];
-reg [1:0]             s_clkmode[2];
+reg [1:0]             m_clkmode[1:0];
+reg [1:0]             s_clkmode[1:0];
 
 assign s_axil_arready = !s_axil_arvalid_reg && !s_axil_rvalid_reg;
 assign s_axil_rdata = s_axil_rdata_reg;
